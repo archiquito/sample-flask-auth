@@ -3,7 +3,7 @@ from flask_cors import CORS
 from db import db
 from config import EnviorementConfig
 from models.user import User
-from login import login_manager, login_user, check_password_hash, current_user, logout_user, login_required
+from login import login_manager, login_user, check_password_hash, current_user, logout_user, login_required, generate_password_hash
 
 def create_app(config_class=EnviorementConfig):
     app = Flask(__name__)
@@ -36,7 +36,7 @@ def create_app(config_class=EnviorementConfig):
 
         user = User.query.filter_by(username=username).first()
 
-        if not user or user.password != password:
+        if not user or check_password_hash(user.password, password) is False:
             return jsonify({"error": "Invalid username or password"}), 401
 
         login_user(user)
@@ -53,7 +53,7 @@ def create_app(config_class=EnviorementConfig):
         data = request.get_json()
         username = data.get('username')
         email = data.get('email')
-        password = data.get('password')
+        password = generate_password_hash(data.get('password'))
         if not username or not email or not password:
             return jsonify({"error": "Username, email, and password are required"}), 400
         user_exists = User.query.filter((User.username == username) | (User.email == email)).first()

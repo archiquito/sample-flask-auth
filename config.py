@@ -6,7 +6,7 @@ class Config:
     PORT = 8000
     DEBUG = False
     TESTING = False
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///app.db'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://flask_auth:example@localhost:3306/flask_auth'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = 'secret'
 
