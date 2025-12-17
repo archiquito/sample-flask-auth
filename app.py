@@ -47,7 +47,31 @@ def create_app(config_class=EnviorementConfig):
     def logout():
         logout_user()
         return jsonify({"message": "Logged out successfully"}), 200
+
+    @app.route('/user', methods=['POST'])
+    def create_user():
+        data = request.get_json()
+        username = data.get('username')
+        email = data.get('email')
+        password = data.get('password')
+        if not username or not email or not password:
+            return jsonify({"error": "Username, email, and password are required"}), 400
+        user_exists = User.query.filter((User.username == username) | (User.email == email)).first()
+        if user_exists:
+            return jsonify({"error": "User with this username or email already exists"}), 409
+        new_user = User(username=username, email=email, password=password)
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify({"message": "User created successfully"}), 201
     
+    @app.route('/user/<int:user_id>', methods=['GET'])
+    @login_required
+    def get_user(user_id):
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        return jsonify({"user": user.username}), 200
+
     return app
 
 if __name__ == '__main__':
