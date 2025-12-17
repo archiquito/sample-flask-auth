@@ -64,7 +64,7 @@ def create_app(config_class=EnviorementConfig):
         db.session.commit()
         return jsonify({"message": "User created successfully"}), 201
     
-    @app.route('/user/<int:user_id>', methods=['GET'])
+    @app.route('/get_user/<int:user_id>', methods=['GET'])
     @login_required
     def get_user(user_id):
         user = User.query.get(user_id)
@@ -72,7 +72,34 @@ def create_app(config_class=EnviorementConfig):
             return jsonify({"error": "User not found"}), 404
         return jsonify({"user": user.username}), 200
 
+    @app.route('/update_user/<int:user_id>', methods=['PUT'])
+    @login_required
+    def update_user(user_id):
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        data = request.get_json()
+        password = data.get('password')
+
+        if password:
+            user.password = password
+        db.session.commit()
+        return jsonify({"message": "User updated successfully"}), 200
+
+    @app.route('/delete_user/<int:user_id>', methods=['DELETE'])
+    @login_required
+    def delete_user(user_id):
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        if current_user == user:
+            return jsonify({"error": "You are not authorized to delete this user"}), 403
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({"message": "User deleted successfully"}), 200
+
     return app
+
 
 if __name__ == '__main__':
     app = create_app()
